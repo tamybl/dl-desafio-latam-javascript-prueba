@@ -67,11 +67,11 @@ project.addTask(task4);
 
 // Generar un resumen del estado de las tareas
 const resume = project.resumeProject();
-console.log('Resume Tasks:', resume);
+//console.log('Resume Tasks:', resume);
 
 // Ordenar tareas
 const orderTasks = project.sortTasks();
-console.log('Order by Deadline:', orderTasks);
+//console.log('Order by Deadline:', orderTasks);
 
 // PARTE II
 type Operation = (tarea: TaskI) => boolean;
@@ -131,10 +131,8 @@ class APIProject extends Project {
     }
 
     //Simula una llamada a una API para cargar los detalles del proyecto.
-    async loadProjectDetails(): Promise<void> {
-        console.log(`Loading details for project ${this.id}...`);
-        console.log('load', this.tasks);
-        const projectDetails = await new Promise<ProjectI>((resolve) => {
+    loadData() {
+        return new Promise<ProjectI>((resolve) => {
             setTimeout(() => {
                 resolve({
                     id: this.id,
@@ -146,13 +144,17 @@ class APIProject extends Project {
                         { id: 3, description: "Task 3", status: "completed", final_date: "2024-11-18" }
                     ],
                 });
-            }, 2000); // Simula un retraso de 2 segundos
+            }, 2000);
         });
+    }
+    async loadProjectDetails(): Promise<void>  {
+        console.log(`Loading details for project ${this.id}...`);
+        const projectDetails = await this.loadData();
         this.tasks = projectDetails.tasks;
         console.log("Project details loaded:", this.tasks);
     }
     //Simula la actualización del estado de una tarea.
-    public async updateTaskStatus(taskId: number, newStatus: "pending" | "in progress" | "completed"): Promise<void> {
+    async updateTaskStatus(taskId: number, newStatus: "pending" | "in progress" | "completed"): Promise<void> {
         if (!this.tasks || this.tasks.length === 0) {
             throw new Error("Tasks are not loaded. Call loadProjectDetails first.");
         }
@@ -160,7 +162,6 @@ class APIProject extends Project {
         return new Promise<void>((resolve, reject) => {
             setTimeout(() => {
                 if (Math.random() > 0.2) { // 80% de éxito
-                    //console.log('tareas', this.tasks);
                     const task = this.tasks.find((t) => t.id === taskId);
                     if (task) {
                         task.status = newStatus;
@@ -197,6 +198,7 @@ const apiProject = new APIProject(101, "API Project ", "2024-11-01");
     try {
         await apiProject.updateTaskStatus(2, "completed");
         console.log("Task status updated successfully!");
+        console.log("Taks", apiProject.tasks)
     } catch (error) {
         console.error('error', error);
     }
@@ -209,9 +211,15 @@ apiProject.addTaskListener((task) => {
 
 // Completar una tarea y disparar la notificación
 (async () => {
-    await apiProject.updateTaskStatus(2, "completed");
-    const task = apiProject.tasks.find((t) => t.id === 2);
-    if (task) {
-        apiProject.notifyTaskCompletion(task);
+    await apiProject.loadProjectDetails();
+    try {
+        await apiProject.updateTaskStatus(2, "completed");
+        const task = apiProject.tasks.find((t) => t.id === 2);
+        if (task) {
+            apiProject.notifyTaskCompletion(task);
+        }
+    }
+    catch(error) {
+        console.log("Notification Error", error);
     }
 })();
