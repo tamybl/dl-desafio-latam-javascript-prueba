@@ -128,9 +128,13 @@ class APIProject extends Project {
     constructor(id: number, name: string, initial_date: string) {
         super(id, name, initial_date);
     }
-    /* Simular llamada a una API para cargar los detalles */
+
+    /**
+     * Simula una llamada a una API para cargar los detalles del proyecto.
+     * @returns Promesa que resuelve con los detalles del proyecto.
+     */
     async loadProjectDetails(): Promise<void> {
-        console.log(`Loading details for project: ${this.id}`);
+        console.log(`Loading details for project ${this.id}...`);
         const projectDetails = await new Promise<ProjectI>((resolve) => {
             setTimeout(() => {
                 resolve({
@@ -138,17 +142,23 @@ class APIProject extends Project {
                     name: this.name,
                     initial_date: this.initial_date,
                     tasks: [
-                        { id: 1, description: "Actualizar imágenes landing concurso", status: "pending", final_date: "2024-11-22" },
-                        { id: 2, description: "Crear documentación para capacitaciones", status: "in progress", final_date: "2024-11-20" },
-                        { id: 3, description: "Ajustar diseño Home segun Figma", status: "completed", final_date: "2024-11-18" }
+                        { id: 1, description: "Task 1", status: "pending", final_date: "2024-11-22" },
+                        { id: 2, description: "Task 2", status: "in progress", final_date: "2024-11-20" },
+                        { id: 3, description: "Task 3", status: "completed", final_date: "2024-11-18" }
                     ],
                 });
             }, 2000); // Simula un retraso de 2 segundos
         });
         this.tasks = projectDetails.tasks;
-        console.log("Project details loaded:", this.tasks);        
+        console.log("Project details loaded:", this.tasks);
     }
-    //
+
+    /**
+     * Simula la actualización del estado de una tarea.
+     * @param taskId ID de la tarea a actualizar.
+     * @param newStatus Nuevo estado de la tarea.
+     * @returns Promesa que resuelve si la operación es exitosa.
+     */
     async updateTaskStatus(taskId: number, newStatus: "pending" | "in progress" | "completed"): Promise<void> {
         console.log(`Updating status for task ${taskId} to ${newStatus}...`);
         return new Promise<void>((resolve, reject) => {
@@ -168,18 +178,22 @@ class APIProject extends Project {
             }, 1000);
         });
     }
-}
-
-    // Lista de funciones que escuchan notificaciones de tareas completadas
-const taskListeners: ((task: TaskI) => void)[] = [];
-    // Notifica a los listeners cuando una tarea ha sido completada
-notifyTaskCompletion(task: TaskI): void {
+    const taskListeners: ((task: TaskI) => void)[] = [];
+    /**
+     * Notifica a los listeners cuando una tarea ha sido completada.*/
+    notifyTaskCompletion(task: TaskI): void {
         taskListeners.forEach((listener) => listener(task));
     }
-    //Registra un listener para tareas completadas.
+
+    /**
+     * Registra un listener para tareas completadas.
+     * @param listener Función a ejecutar cuando una tarea se complete.
+     */
     addTaskListener(listener: (task: TaskI) => void): void {
         taskListeners.push(listener);
     }
+}
+
 
 // PARTE 3: CASOS DE USO
 const apiProject = new APIProject(101, "API Project ", "2024-11-01");
@@ -198,11 +212,16 @@ const apiProject = new APIProject(101, "API Project ", "2024-11-01");
     }
 })();
 
-// Agregar un listener que notifique en la consola cuando una tarea se complete
-addTaskListener((task) => {
-    console.log(`Notification: Task ${task.id} has been completed!`);
+// Registrar un listener
+apiProject.addTaskListener((task) => {
+    console.log(`Notification: Task ${task.id} (${task.description}) is now completed!`);
 });
 
 // Completar una tarea y disparar la notificación
-const completedTask: TaskI = { id: 3, description: "Task 3", status: "completed", final_date: "2024-11-18" };
-notifyTaskCompletion(completedTask);
+(async () => {
+    await apiProject.updateTaskStatus(2, "completed");
+    const task = apiProject.tasks.find((t) => t.id === 2);
+    if (task) {
+        apiProject.notifyTaskCompletion(task);
+    }
+})();
