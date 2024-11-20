@@ -125,6 +125,7 @@ console.log('Critical Tasks:', criticalTasks);
 // PARTE 3
 // Para no repetir codigo y añadir nuevas funcionalidades, se extiende APIProject agregando todos los atributos y métodos de Project.
 class APIProject extends Project {
+    taskListeners: ((task: TaskI) => void)[] = [];
     constructor(id: number, name: string, initial_date: string) {
         super(id, name, initial_date);
     }
@@ -152,13 +153,7 @@ class APIProject extends Project {
         this.tasks = projectDetails.tasks;
         console.log("Project details loaded:", this.tasks);
     }
-
-    /**
-     * Simula la actualización del estado de una tarea.
-     * @param taskId ID de la tarea a actualizar.
-     * @param newStatus Nuevo estado de la tarea.
-     * @returns Promesa que resuelve si la operación es exitosa.
-     */
+    //Simula la actualización del estado de una tarea.
     async updateTaskStatus(taskId: number, newStatus: "pending" | "in progress" | "completed"): Promise<void> {
         console.log(`Updating status for task ${taskId} to ${newStatus}...`);
         return new Promise<void>((resolve, reject) => {
@@ -178,19 +173,14 @@ class APIProject extends Project {
             }, 1000);
         });
     }
-    const taskListeners: ((task: TaskI) => void)[] = [];
-    /**
-     * Notifica a los listeners cuando una tarea ha sido completada.*/
+   // Notifica a los listeners cuando una tarea ha sido completada.
     notifyTaskCompletion(task: TaskI): void {
-        taskListeners.forEach((listener) => listener(task));
+        this.taskListeners.forEach((listener) => listener(task));
     }
 
-    /**
-     * Registra un listener para tareas completadas.
-     * @param listener Función a ejecutar cuando una tarea se complete.
-     */
+    //Registra un listener para tareas completadas.
     addTaskListener(listener: (task: TaskI) => void): void {
-        taskListeners.push(listener);
+        this.taskListeners.push(listener);
     }
 }
 
@@ -205,10 +195,10 @@ const apiProject = new APIProject(101, "API Project ", "2024-11-01");
 // Actualizar estado de una tarea
 (async () => {
     try {
-        await updateTaskStatus(2, "completed");
+        await apiProject.updateTaskStatus(2, "completed");
         console.log("Task status updated successfully!");
     } catch (error) {
-        console.error(error.message);
+        console.error('error', error);
     }
 })();
 
