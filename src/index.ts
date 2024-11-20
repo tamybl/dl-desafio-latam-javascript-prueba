@@ -168,17 +168,18 @@ class APIProject extends Project {
             }, 1000);
         });
     }
+}
+
     // Lista de funciones que escuchan notificaciones de tareas completadas
-    const taskListeners: ((task: TaskI) => void)[] = [];
+const taskListeners: ((task: TaskI) => void)[] = [];
     // Notifica a los listeners cuando una tarea ha sido completada
-    notifyTaskCompletion(task: TaskI): void {
+notifyTaskCompletion(task: TaskI): void {
         taskListeners.forEach((listener) => listener(task));
     }
     //Registra un listener para tareas completadas.
     addTaskListener(listener: (task: TaskI) => void): void {
         taskListeners.push(listener);
     }
-}
 
 // PARTE 3: CASOS DE USO
 const apiProject = new APIProject(101, "API Project ", "2024-11-01");
@@ -196,3 +197,12 @@ const apiProject = new APIProject(101, "API Project ", "2024-11-01");
         console.error(error.message);
     }
 })();
+
+// Agregar un listener que notifique en la consola cuando una tarea se complete
+addTaskListener((task) => {
+    console.log(`Notification: Task ${task.id} has been completed!`);
+});
+
+// Completar una tarea y disparar la notificación
+const completedTask: TaskI = { id: 3, description: "Task 3", status: "completed", final_date: "2024-11-18" };
+notifyTaskCompletion(completedTask);
