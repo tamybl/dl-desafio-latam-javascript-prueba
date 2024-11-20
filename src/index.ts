@@ -148,6 +148,7 @@ class APIProject extends Project {
         this.tasks = projectDetails.tasks;
         console.log("Project details loaded:", this.tasks);        
     }
+    //
     async updateTaskStatus(taskId: number, newStatus: "pending" | "in progress" | "completed"): Promise<void> {
         console.log(`Updating status for task ${taskId} to ${newStatus}...`);
         return new Promise<void>((resolve, reject) => {
@@ -167,6 +168,16 @@ class APIProject extends Project {
             }, 1000);
         });
     }
+    // Lista de funciones que escuchan notificaciones de tareas completadas
+    const taskListeners: ((task: TaskI) => void)[] = [];
+    // Notifica a los listeners cuando una tarea ha sido completada
+    notifyTaskCompletion(task: TaskI): void {
+        taskListeners.forEach((listener) => listener(task));
+    }
+    //Registra un listener para tareas completadas.
+    addTaskListener(listener: (task: TaskI) => void): void {
+        taskListeners.push(listener);
+    }
 }
 
 // PARTE 3: CASOS DE USO
@@ -174,4 +185,14 @@ const apiProject = new APIProject(101, "API Project ", "2024-11-01");
 
 (async () => {
     await apiProject.loadProjectDetails();
+})();
+
+// Actualizar estado de una tarea
+(async () => {
+    try {
+        await updateTaskStatus(2, "completed");
+        console.log("Task status updated successfully!");
+    } catch (error) {
+        console.error(error.message);
+    }
 })();
