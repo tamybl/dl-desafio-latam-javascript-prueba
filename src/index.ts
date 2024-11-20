@@ -120,8 +120,58 @@ console.log('Days left:', daysLeft);
 
 // Calcular tareas criticas
 const criticalTasks = getCriticalTask(project);
-console.log('Critical Taks:', criticalTasks);
+console.log('Critical Tasks:', criticalTasks);
 
 // PARTE 3
+// Para no repetir codigo y añadir nuevas funcionalidades, se extiende APIProject agregando todos los atributos y métodos de Project.
+class APIProject extends Project {
+    constructor(id: number, name: string, initial_date: string) {
+        super(id, name, initial_date);
+    }
+    /* Simular llamada a una API para cargar los detalles */
+    async loadProjectDetails(): Promise<void> {
+        console.log(`Loading details for project: ${this.id}`);
+        const projectDetails = await new Promise<ProjectI>((resolve) => {
+            setTimeout(() => {
+                resolve({
+                    id: this.id,
+                    name: this.name,
+                    initial_date: this.initial_date,
+                    tasks: [
+                        { id: 1, description: "Actualizar imágenes landing concurso", status: "pending", final_date: "2024-11-22" },
+                        { id: 2, description: "Crear documentación para capacitaciones", status: "in progress", final_date: "2024-11-20" },
+                        { id: 3, description: "Ajustar diseño Home segun Figma", status: "completed", final_date: "2024-11-18" }
+                    ],
+                });
+            }, 2000); // Simula un retraso de 2 segundos
+        });
+        this.tasks = projectDetails.tasks;
+        console.log("Project details loaded:", this.tasks);        
+    }
+    async updateTaskStatus(taskId: number, newStatus: "pending" | "in progress" | "completed"): Promise<void> {
+        console.log(`Updating status for task ${taskId} to ${newStatus}...`);
+        return new Promise<void>((resolve, reject) => {
+            setTimeout(() => {
+                if (Math.random() > 0.2) { // 80% de éxito
+                    const task = this.tasks.find((t) => t.id === taskId);
+                    if (task) {
+                        task.status = newStatus;
+                        console.log(`Task ${taskId} status updated to ${newStatus}.`);
+                        resolve();
+                    } else {
+                        reject(new Error(`Task ${taskId} not found.`));
+                    }
+                } else {
+                    reject(new Error(`Failed to update task ${taskId}.`));
+                }
+            }, 1000);
+        });
+    }
+}
 
+// PARTE 3: CASOS DE USO
+const apiProject = new APIProject(101, "API Project ", "2024-11-01");
 
+(async () => {
+    await apiProject.loadProjectDetails();
+})();
