@@ -111,16 +111,16 @@ const isActive = (task: TaskI) => task.final_date >= today;
 
 const tasksCompleted = filterTaskByProject(project, isCompleted);
 const tasksActive = filterTaskByProject(project, isActive);
-console.log('Completed Task:', tasksCompleted);
-console.log('Active Tasks:', tasksActive);
+//console.log('Completed Task:', tasksCompleted);
+//console.log('Active Tasks:', tasksActive);
 
 // Calcular tiempo restante
 const daysLeft = calculateTime(project);
-console.log('Days left:', daysLeft);
+//console.log('Days left:', daysLeft);
 
 // Calcular tareas criticas
 const criticalTasks = getCriticalTask(project);
-console.log('Critical Tasks:', criticalTasks);
+//console.log('Critical Tasks:', criticalTasks);
 
 // PARTE 3
 // Para no repetir codigo y añadir nuevas funcionalidades, se extiende APIProject agregando todos los atributos y métodos de Project.
@@ -130,12 +130,10 @@ class APIProject extends Project {
         super(id, name, initial_date);
     }
 
-    /**
-     * Simula una llamada a una API para cargar los detalles del proyecto.
-     * @returns Promesa que resuelve con los detalles del proyecto.
-     */
+    //Simula una llamada a una API para cargar los detalles del proyecto.
     async loadProjectDetails(): Promise<void> {
         console.log(`Loading details for project ${this.id}...`);
+        console.log('load', this.tasks);
         const projectDetails = await new Promise<ProjectI>((resolve) => {
             setTimeout(() => {
                 resolve({
@@ -154,11 +152,15 @@ class APIProject extends Project {
         console.log("Project details loaded:", this.tasks);
     }
     //Simula la actualización del estado de una tarea.
-    async updateTaskStatus(taskId: number, newStatus: "pending" | "in progress" | "completed"): Promise<void> {
+    public async updateTaskStatus(taskId: number, newStatus: "pending" | "in progress" | "completed"): Promise<void> {
+        if (!this.tasks || this.tasks.length === 0) {
+            throw new Error("Tasks are not loaded. Call loadProjectDetails first.");
+        }
         console.log(`Updating status for task ${taskId} to ${newStatus}...`);
         return new Promise<void>((resolve, reject) => {
             setTimeout(() => {
                 if (Math.random() > 0.2) { // 80% de éxito
+                    //console.log('tareas', this.tasks);
                     const task = this.tasks.find((t) => t.id === taskId);
                     if (task) {
                         task.status = newStatus;
@@ -189,11 +191,9 @@ class APIProject extends Project {
 const apiProject = new APIProject(101, "API Project ", "2024-11-01");
 
 (async () => {
+    // Cargar detalles del proyecto
     await apiProject.loadProjectDetails();
-})();
-
-// Actualizar estado de una tarea
-(async () => {
+    // Actualizar estado de una tarea
     try {
         await apiProject.updateTaskStatus(2, "completed");
         console.log("Task status updated successfully!");
