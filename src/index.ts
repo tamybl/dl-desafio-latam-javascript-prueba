@@ -51,8 +51,24 @@ class Project implements ProjectI {
     }
 }
 
-function filterTaskByProject() {
+// PARTE II
+type Operation = (tarea: TaskI) => boolean;
+function filterTaskByProject(project: Project, functionFilter: Operation):TaskI[] {
+    return project.tasks.filter(functionFilter);
+}
 
+function calculateTime(project: Project):number {
+    const day = 24*60*60*1000;
+    const calculate = project.tasks.reduce((acc, task) => {
+        const dateToday = new Date(today).getTime();
+        const dateTask = new Date(task.final_date).getTime();
+        if(dateTask > dateToday) {
+            const diff = dateTask - dateToday;
+            acc = (acc || 0) + Math.round(diff/day);
+        }
+        return acc;
+    }, 0)
+    return calculate;
 }
 
 // PARTE I: CASOS DE USO
@@ -80,4 +96,19 @@ const orderTasks = project.sortTasks();
 console.log('Order by Deadline:', orderTasks);
 
 // PARTE II: CASOS DE USO
+// Filtrar tareas del proyecto
+const today = new Date().toLocaleDateString('en-CA')
+const isCompleted = (task: TaskI) => task.status === "completed";
+const isActive = (task: TaskI) => task.final_date >= today;
+
+const tasksCompleted = filterTaskByProject(project, isCompleted);
+const tasksActive = filterTaskByProject(project, isActive);
+console.log('Completed Task:', tasksCompleted);
+console.log('Active Tasks:', tasksActive);
+
+// Calcular tiempo restante
+const daysLeft = calculateTime(project);
+console.log('Dias restantes:', daysLeft);
+
+//
 
