@@ -45,9 +45,7 @@ class Project implements ProjectI {
             }
             return  0;
         })
-        //console.log('Order by Deadline:', orderTasks);
-        return orderTasks;
-        
+        return orderTasks;       
     }
 }
 
@@ -69,6 +67,16 @@ function calculateTime(project: Project):number {
         return acc;
     }, 0)
     return calculate;
+}
+
+function getCriticalTask(project: Project):TaskI[] {
+    const dateToday = new Date(today).getTime();
+    const day = 24*60*60*1000;
+    return project.tasks.filter((task) => {
+        const dateTask = new Date(task.final_date).getTime();
+        const diff = Math.round((dateTask - dateToday)/day);
+        return (diff <= 3 && diff >= 0);
+    })
 }
 
 // PARTE I: CASOS DE USO
@@ -108,7 +116,9 @@ console.log('Active Tasks:', tasksActive);
 
 // Calcular tiempo restante
 const daysLeft = calculateTime(project);
-console.log('Dias restantes:', daysLeft);
+console.log('Days left:', daysLeft);
 
-//
+// Calcular tareas criticas
+const criticalTasks = getCriticalTask(project);
+console.log('Critical Taks:', criticalTasks);
 
